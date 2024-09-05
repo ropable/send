@@ -10,8 +10,8 @@ module.exports = function(state, emit) {
     strings = unsupportedStrings(state);
     why = html`
       <a
-        class="text-blue"
-        href="https://github.com/mozilla/send/blob/master/docs/faq.md#why-is-my-browser-not-supported"
+        class="text-primary"
+        href="https://github.com/timvisee/send/blob/master/docs/faq.md#why-is-my-browser-not-supported"
       >
         ${state.translate('notSupportedLink')}
       </a>
@@ -27,7 +27,7 @@ module.exports = function(state, emit) {
     <main class="main">
       ${state.modal && modal(state, emit)}
       <section
-        class="flex flex-col items-center justify-center text-center bg-white m-6 px-6 py-8 border border-grey-30 md:border-none md:px-12 md:py-16 shadow w-full md:h-full dark:bg-grey-90"
+        class="flex flex-col items-center justify-center text-center bg-white m-6 px-6 py-8 border-default border-grey-30 md:border-none md:px-12 md:py-16 shadow-default w-full md:h-full dark:bg-grey-90"
       >
         <h1 class="text-3xl font-bold">${strings.header}</h1>
         <p class="mt-4 mb-8 max-w-md leading-normal">${strings.description}</p>

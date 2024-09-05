@@ -36,10 +36,21 @@ module.exports = function(app) {
         defaultSrc: ["'self'"],
         connectSrc: [
           "'self'",
-          config.base_url.replace(/^https:\/\//, 'wss://')
+          function(req) {
+            const baseUrl = config.deriveBaseUrl(req);
+            const r = baseUrl.replace(/^http(s?):\/\//, 'ws$1://');
+            console.log([baseUrl, r]);
+            return r;
+          }
         ],
-        imgSrc: ["'self'", "data:"],
+        imgSrc: ["'self'", 'data:'],
         scriptSrc: [
+          "'self'",
+          function(req) {
+            return `'nonce-${req.cspNonce}'`;
+          }
+        ],
+        styleSrc: [
           "'self'",
           function(req) {
             return `'nonce-${req.cspNonce}'`;
@@ -51,10 +62,6 @@ module.exports = function(app) {
         reportUri: '/__cspreport__'
       }
     };
-
-    csp.directives.connectSrc.push(
-      config.base_url.replace(/^https:\/\//, 'wss://')
-    );
 
     app.use(helmet.contentSecurityPolicy(csp));
   }

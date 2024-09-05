@@ -1,4 +1,4 @@
-# [![Send](./assets/icon.svg)](https://gitlab.com/timvisee/send/) Send
+# [![Send](./assets/icon-64x64.png)](https://gitlab.com/timvisee/send/) Send
 
 [![Build status on GitLab CI][gitlab-ci-master-badge]][gitlab-ci-link]
 [![Latest release][release-badge]][release-link]
@@ -81,7 +81,7 @@ A file sharing experiment which allows you to send encrypted files to other user
 
 ## Requirements
 
-- [Node.js 12.x](https://nodejs.org/)
+- [Node.js 16.x](https://nodejs.org/)
 - [Redis server](https://redis.io/) (optional for development)
 - [AWS S3](https://aws.amazon.com/s3/) or compatible service (optional)
 
@@ -121,7 +121,7 @@ The server is configured with environment variables. See [server/config.js](serv
 
 ## Localization
 
-see [docs/localization.md](docs/localization.md)
+See: [docs/localization.md](docs/localization.md)
 
 ---
 
@@ -139,7 +139,11 @@ Find a list of public instances here: https://github.com/timvisee/send-instances
 
 ## Deployment
 
-See also [docs/deployment.md](docs/deployment.md)
+See: [docs/deployment.md](docs/deployment.md)
+
+Docker quickstart: [docs/docker.md](docs/docker.md)
+
+AWS example using Ubuntu Server `20.04`: [docs/AWS.md](docs/AWS.md)
 
 ---
 
@@ -148,6 +152,7 @@ See also [docs/deployment.md](docs/deployment.md)
 - Web: _this repository_
 - Command-line: [`ffsend`](https://github.com/timvisee/ffsend)
 - Android: _see [Android](#android) section_
+- Thunderbird: [FileLink provider for Send](https://addons.thunderbird.net/thunderbird/addon/filelink-provider-for-send/)
 
 #### Android
 

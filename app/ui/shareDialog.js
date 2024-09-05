@@ -18,7 +18,7 @@ module.exports = function(name, url) {
         <input
           type="text"
           id="share-url"
-          class="w-full my-4 border rounded-lg leading-loose h-12 px-2 py-1 dark:bg-grey-80"
+          class="w-full my-4 border-default rounded-lg leading-loose h-12 px-2 py-1 dark:bg-grey-80"
           value="${url}"
           readonly="true"
         />
@@ -30,7 +30,7 @@ module.exports = function(name, url) {
           ${state.translate('shareLinkButton')}
         </button>
         <button
-          class="link-blue my-4 font-medium cursor-pointer focus:outline"
+          class="link-primary my-4 font-medium cursor-pointer focus:outline"
           onclick="${close}"
           title="${state.translate('okButton')}"
         >

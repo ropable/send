@@ -1,7 +1,30 @@
 const convict = require('convict');
+const convict_format_with_validator = require('convict-format-with-validator');
 const { tmpdir } = require('os');
 const path = require('path');
 const { randomBytes } = require('crypto');
+
+convict.addFormats(convict_format_with_validator);
+
+convict.addFormat({
+  name: 'positive-int-array',
+  coerce: ints => {
+    // can take: int[] | string[] | string (csv), returns -> int[]
+    const ints_arr = Array.isArray(ints) ? ints : ints.trim().split(',');
+    return ints_arr.map(int =>
+      typeof int === 'number'
+        ? int
+        : parseInt(int.replace(/['"]+/g, '').trim(), 10)
+    );
+  },
+  validate: ints => {
+    // takes: int[], errors if any NaNs, negatives, or floats present
+    for (const int of ints) {
+      if (typeof int !== 'number' || isNaN(int) || int < 0 || int % 1 > 0)
+        throw new Error('must be a comma-separated list of positive integers');
+    }
+  }
+});
 
 const conf = convict({
   s3_bucket: {
@@ -25,7 +48,7 @@ const conf = convict({
     env: 'GCS_BUCKET'
   },
   expire_times_seconds: {
-    format: Array,
+    format: 'positive-int-array',
     default: [300, 3600, 86400, 604800],
     env: 'EXPIRE_TIMES_SECONDS'
   },
@@ -40,9 +63,14 @@ const conf = convict({
     env: 'MAX_EXPIRE_SECONDS'
   },
   download_counts: {
-    format: Array,
+    format: 'positive-int-array',
     default: [1, 2, 3, 4, 5, 20, 50, 100],
     env: 'DOWNLOAD_COUNTS'
+  },
+  default_downloads: {
+    format: Number,
+    default: 1,
+    env: 'DEFAULT_DOWNLOADS'
   },
   max_downloads: {
     format: Number,
@@ -69,10 +97,20 @@ const conf = convict({
     default: 6379,
     env: 'REDIS_PORT'
   },
+  redis_user: {
+    format: String,
+    default: '',
+    env: 'REDIS_USER'
+  },
   redis_password: {
     format: String,
     default: '',
     env: 'REDIS_PASSWORD'
+  },
+  redis_db: {
+    format: String,
+    default: '',
+    env: 'REDIS_DB'
   },
   redis_event_expire: {
     format: Boolean,
@@ -127,8 +165,23 @@ const conf = convict({
   },
   base_url: {
     format: 'url',
-    default: 'https://send.firefox.com',
+    default: 'https://send.example.com',
     env: 'BASE_URL'
+  },
+  custom_title: {
+    format: String,
+    default: 'Send',
+    env: 'CUSTOM_TITLE'
+  },
+  custom_description: {
+    format: String,
+    default: 'Encrypt and send files with a link that automatically expires to ensure your important documents don’t stay online forever.',
+    env: 'CUSTOM_DESCRIPTION'
+  },
+  detect_base_url: {
+    format: Boolean,
+    default: false,
+    env: 'DETECT_BASE_URL'
   },
   file_dir: {
     format: 'String',
@@ -199,6 +252,88 @@ const conf = convict({
     format: String,
     default: 'https://github.com/timvisee/send',
     env: 'SEND_FOOTER_SOURCE_URL'
+  },
+  custom_footer_text: {
+    format: String,
+    default: '',
+    env: 'CUSTOM_FOOTER_TEXT'
+  },
+  custom_footer_url: {
+    format: String,
+    default: '',
+    env: 'CUSTOM_FOOTER_URL'
+  },
+  ui_color_primary: {
+    format: String,
+    default: '#0a84ff',
+    env: 'UI_COLOR_PRIMARY'
+  },
+  ui_color_accent: {
+    format: String,
+    default: '#003eaa',
+    env: 'UI_COLOR_ACCENT'
+  },
+  custom_locale: {
+    format: String,
+    default: '',
+    env: 'CUSTOM_LOCALE'
+  },
+  ui_custom_assets: {
+    android_chrome_192px: {
+      format: String,
+      default: '',
+      env: 'UI_CUSTOM_ASSETS_ANDROID_CHROME_192PX'
+    },
+    android_chrome_512px: {
+      format: String,
+      default: '',
+      env: 'UI_CUSTOM_ASSETS_ANDROID_CHROME_512PX'
+    },
+    apple_touch_icon: {
+      format: String,
+      default: '',
+      env: 'UI_CUSTOM_ASSETS_APPLE_TOUCH_ICON'
+    },
+    favicon_16px: {
+      format: String,
+      default: '',
+      env: 'UI_CUSTOM_ASSETS_FAVICON_16PX'
+    },
+    favicon_32px: {
+      format: String,
+      default: '',
+      env: 'UI_CUSTOM_ASSETS_FAVICON_32PX'
+    },
+    icon: {
+      format: String,
+      default: '',
+      env: 'UI_CUSTOM_ASSETS_ICON'
+    },
+    safari_pinned_tab: {
+      format: String,
+      default: '',
+      env: 'UI_CUSTOM_ASSETS_SAFARI_PINNED_TAB'
+    },
+    facebook: {
+      format: String,
+      default: '',
+      env: 'UI_CUSTOM_ASSETS_FACEBOOK'
+    },
+    twitter: {
+      format: String,
+      default: '',
+      env: 'UI_CUSTOM_ASSETS_TWITTER'
+    },
+    wordmark: {
+      format: String,
+      default: '',
+      env: 'UI_CUSTOM_ASSETS_WORDMARK'
+    },
+    custom_css: {
+      format: String,
+      default: '',
+      env: 'UI_CUSTOM_CSS'
+    }
   }
 });
 
@@ -206,4 +341,17 @@ const conf = convict({
 conf.validate({ allowed: 'strict' });
 
 const props = conf.getProperties();
-module.exports = props;
+
+const deriveBaseUrl = req => {
+  if (!props.detect_base_url) {
+    return props.base_url;
+  }
+
+  const protocol = req.secure ? 'https://' : 'http://';
+  return `${protocol}${req.headers.host}`;
+};
+
+module.exports = {
+  ...props,
+  deriveBaseUrl
+};
